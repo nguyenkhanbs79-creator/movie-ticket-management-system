@@ -14,4 +14,5 @@ public abstract class ReportServiceBase
     }
 
     protected abstract IEnumerable<T> Query<T>(DateTime from, DateTime to);
+    protected abstract IEnumerable<object> Query(DateTime from, DateTime to);
 }

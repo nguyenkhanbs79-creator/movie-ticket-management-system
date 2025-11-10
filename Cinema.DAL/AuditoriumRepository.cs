@@ -15,6 +15,7 @@ public class AuditoriumRepository : IRepository<Auditorium>
             var auditoriums = new List<Auditorium>();
             using var connection = new SqlConnection(ConnectionString);
             using var command = new SqlCommand(@"SELECT AuditoriumId, Name, SeatRows, SeatCols, Location, CreatedAt, UpdatedAt FROM dbo.Auditoriums ORDER BY Name;", connection);
+            using var command = new SqlCommand(@"SELECT AuditoriumId, Name, SeatRows, SeatCols, CreatedAt, UpdatedAt FROM dbo.Auditoriums ORDER BY Name;", connection);
             connection.Open();
             using var reader = command.ExecuteReader();
             while (reader.Read())
@@ -36,6 +37,7 @@ public class AuditoriumRepository : IRepository<Auditorium>
         {
             using var connection = new SqlConnection(ConnectionString);
             using var command = new SqlCommand(@"SELECT AuditoriumId, Name, SeatRows, SeatCols, Location, CreatedAt, UpdatedAt FROM dbo.Auditoriums WHERE AuditoriumId = @Id;", connection);
+            using var command = new SqlCommand(@"SELECT AuditoriumId, Name, SeatRows, SeatCols, CreatedAt, UpdatedAt FROM dbo.Auditoriums WHERE AuditoriumId = @Id;", connection);
             command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
             connection.Open();
             using var reader = command.ExecuteReader();
@@ -53,6 +55,7 @@ public class AuditoriumRepository : IRepository<Auditorium>
         {
             using var connection = new SqlConnection(ConnectionString);
             using var command = new SqlCommand(@"INSERT INTO dbo.Auditoriums (Name, SeatRows, SeatCols, Location, CreatedAt, UpdatedAt) VALUES (@Name, @SeatRows, @SeatCols, @Location, @CreatedAt, @UpdatedAt); SELECT CAST(SCOPE_IDENTITY() AS INT);", connection);
+            using var command = new SqlCommand(@"INSERT INTO dbo.Auditoriums (Name, SeatRows, SeatCols, CreatedAt, UpdatedAt) VALUES (@Name, @SeatRows, @SeatCols, @CreatedAt, @UpdatedAt); SELECT CAST(SCOPE_IDENTITY() AS INT);", connection);
             var now = DateTime.UtcNow;
             entity.CreatedAt = now;
             entity.UpdatedAt = now;
@@ -81,6 +84,7 @@ public class AuditoriumRepository : IRepository<Auditorium>
         {
             using var connection = new SqlConnection(ConnectionString);
             using var command = new SqlCommand(@"UPDATE dbo.Auditoriums SET Name = @Name, SeatRows = @SeatRows, SeatCols = @SeatCols, Location = @Location, UpdatedAt = @UpdatedAt WHERE AuditoriumId = @Id;", connection);
+            using var command = new SqlCommand(@"UPDATE dbo.Auditoriums SET Name = @Name, SeatRows = @SeatRows, SeatCols = @SeatCols, UpdatedAt = @UpdatedAt WHERE AuditoriumId = @Id;", connection);
             entity.UpdatedAt = DateTime.UtcNow;
             command.Parameters.Add(new SqlParameter("@Name", SqlDbType.NVarChar, 100) { Value = entity.Name });
             command.Parameters.Add(new SqlParameter("@SeatRows", SqlDbType.Int) { Value = entity.SeatRows });

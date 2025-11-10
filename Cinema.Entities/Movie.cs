@@ -17,4 +17,8 @@ public class Movie : BaseEntity
     public DateTime? ReleaseDate { get; set; }
 
     public string? Rating { get; set; }
+
+    public int Duration { get; set; }
+
+    public decimal TicketPrice { get; set; }
 }
