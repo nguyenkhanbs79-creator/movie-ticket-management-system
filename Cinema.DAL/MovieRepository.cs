@@ -15,6 +15,7 @@ public class MovieRepository : IRepository<Movie>
             var movies = new List<Movie>();
             using var connection = new SqlConnection(ConnectionString);
             using var command = new SqlCommand(@"SELECT MovieId, Title, Genre, Description, Duration, TicketPrice, ReleaseDate, Rating, CreatedAt, UpdatedAt FROM dbo.Movies ORDER BY Title;", connection);
+            using var command = new SqlCommand(@"SELECT MovieId, Title, Genre, Duration, TicketPrice, CreatedAt, UpdatedAt FROM dbo.Movies ORDER BY Title;", connection);
             connection.Open();
             using var reader = command.ExecuteReader();
             while (reader.Read())
@@ -36,6 +37,7 @@ public class MovieRepository : IRepository<Movie>
         {
             using var connection = new SqlConnection(ConnectionString);
             using var command = new SqlCommand(@"SELECT MovieId, Title, Genre, Description, Duration, TicketPrice, ReleaseDate, Rating, CreatedAt, UpdatedAt FROM dbo.Movies WHERE MovieId = @Id;", connection);
+            using var command = new SqlCommand(@"SELECT MovieId, Title, Genre, Duration, TicketPrice, CreatedAt, UpdatedAt FROM dbo.Movies WHERE MovieId = @Id;", connection);
             command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
             connection.Open();
             using var reader = command.ExecuteReader();
@@ -53,6 +55,7 @@ public class MovieRepository : IRepository<Movie>
         {
             using var connection = new SqlConnection(ConnectionString);
             using var command = new SqlCommand(@"INSERT INTO dbo.Movies (Title, Genre, Description, Duration, TicketPrice, ReleaseDate, Rating, CreatedAt, UpdatedAt) VALUES (@Title, @Genre, @Description, @Duration, @TicketPrice, @ReleaseDate, @Rating, @CreatedAt, @UpdatedAt); SELECT CAST(SCOPE_IDENTITY() AS INT);", connection);
+            using var command = new SqlCommand(@"INSERT INTO dbo.Movies (Title, Genre, Duration, TicketPrice, CreatedAt, UpdatedAt) VALUES (@Title, @Genre, @Duration, @TicketPrice, @CreatedAt, @UpdatedAt); SELECT CAST(SCOPE_IDENTITY() AS INT);", connection);
             var now = DateTime.UtcNow;
             entity.CreatedAt = now;
             entity.UpdatedAt = now;
@@ -64,6 +67,9 @@ public class MovieRepository : IRepository<Movie>
             command.Parameters.Add(priceParam);
             command.Parameters.Add(new SqlParameter("@ReleaseDate", SqlDbType.Date) { Value = (object?)entity.ReleaseDate ?? DBNull.Value });
             command.Parameters.Add(new SqlParameter("@Rating", SqlDbType.NVarChar, 10) { Value = (object?)entity.Rating ?? DBNull.Value });
+            command.Parameters.Add(new SqlParameter("@Duration", SqlDbType.Int) { Value = entity.Duration });
+            var priceParam = new SqlParameter("@TicketPrice", SqlDbType.Decimal) { Precision = 10, Scale = 2, Value = entity.TicketPrice };
+            command.Parameters.Add(priceParam);
             command.Parameters.Add(new SqlParameter("@CreatedAt", SqlDbType.DateTime2) { Value = entity.CreatedAt });
             command.Parameters.Add(new SqlParameter("@UpdatedAt", SqlDbType.DateTime2) { Value = entity.UpdatedAt });
             connection.Open();
@@ -94,6 +100,13 @@ public class MovieRepository : IRepository<Movie>
             command.Parameters.Add(priceParam);
             command.Parameters.Add(new SqlParameter("@ReleaseDate", SqlDbType.Date) { Value = (object?)entity.ReleaseDate ?? DBNull.Value });
             command.Parameters.Add(new SqlParameter("@Rating", SqlDbType.NVarChar, 10) { Value = (object?)entity.Rating ?? DBNull.Value });
+            using var command = new SqlCommand(@"UPDATE dbo.Movies SET Title = @Title, Genre = @Genre, Duration = @Duration, TicketPrice = @TicketPrice, UpdatedAt = @UpdatedAt WHERE MovieId = @Id;", connection);
+            entity.UpdatedAt = DateTime.UtcNow;
+            command.Parameters.Add(new SqlParameter("@Title", SqlDbType.NVarChar, 200) { Value = entity.Title });
+            command.Parameters.Add(new SqlParameter("@Genre", SqlDbType.NVarChar, 100) { Value = entity.Genre });
+            command.Parameters.Add(new SqlParameter("@Duration", SqlDbType.Int) { Value = entity.Duration });
+            var priceParam = new SqlParameter("@TicketPrice", SqlDbType.Decimal) { Precision = 10, Scale = 2, Value = entity.TicketPrice };
+            command.Parameters.Add(priceParam);
             command.Parameters.Add(new SqlParameter("@UpdatedAt", SqlDbType.DateTime2) { Value = entity.UpdatedAt });
             command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = entity.Id });
             connection.Open();
@@ -133,6 +146,8 @@ public class MovieRepository : IRepository<Movie>
             TicketPrice = reader.GetDecimal(reader.GetOrdinal("TicketPrice")),
             ReleaseDate = reader.IsDBNull(reader.GetOrdinal("ReleaseDate")) ? null : reader.GetDateTime(reader.GetOrdinal("ReleaseDate")),
             Rating = reader.IsDBNull(reader.GetOrdinal("Rating")) ? null : reader.GetString(reader.GetOrdinal("Rating")),
+            Duration = reader.GetInt32(reader.GetOrdinal("Duration")),
+            TicketPrice = reader.GetDecimal(reader.GetOrdinal("TicketPrice")),
             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
             UpdatedAt = reader.GetDateTime(reader.GetOrdinal("UpdatedAt"))
         };

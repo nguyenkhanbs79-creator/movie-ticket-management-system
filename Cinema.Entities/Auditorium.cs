@@ -7,6 +7,4 @@ public class Auditorium : BaseEntity
     public int SeatRows { get; set; }
 
     public int SeatCols { get; set; }
-
-    public string? Location { get; set; }
 }
