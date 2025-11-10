@@ -32,6 +32,7 @@ CREATE TABLE dbo.Users
     FullName     NVARCHAR(100)    NULL,
     Email        NVARCHAR(255)    NULL,
     CreatedAt    DATETIME2(0)     NOT NULL CONSTRAINT DF_Users_CreatedAt DEFAULT SYSUTCDATETIME(),
+    UpdatedAt    DATETIME2(0)     NOT NULL CONSTRAINT DF_Users_UpdatedAt DEFAULT SYSUTCDATETIME(),
     CONSTRAINT FK_Users_Roles FOREIGN KEY (RoleId) REFERENCES dbo.Roles(RoleId)
 );
 GO
@@ -40,11 +41,16 @@ CREATE TABLE dbo.Movies
 (
     MovieId     INT              IDENTITY(1,1) PRIMARY KEY,
     Title       NVARCHAR(200)    NOT NULL UNIQUE,
+    Genre       NVARCHAR(100)    NOT NULL,
     Description NVARCHAR(MAX)    NULL,
     Duration    INT              NOT NULL,
+    TicketPrice DECIMAL(10,2)    NOT NULL,
     ReleaseDate DATE             NULL,
     Rating      NVARCHAR(10)     NULL,
-    CONSTRAINT CK_Movies_Duration_Positive CHECK (Duration > 0)
+    CreatedAt   DATETIME2(0)     NOT NULL CONSTRAINT DF_Movies_CreatedAt DEFAULT SYSUTCDATETIME(),
+    UpdatedAt   DATETIME2(0)     NOT NULL CONSTRAINT DF_Movies_UpdatedAt DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT CK_Movies_Duration_Positive CHECK (Duration > 0),
+    CONSTRAINT CK_Movies_TicketPrice_Positive CHECK (TicketPrice > 0)
 );
 GO
 
@@ -55,6 +61,8 @@ CREATE TABLE dbo.Auditoriums
     SeatRows     INT             NOT NULL,
     SeatCols     INT             NOT NULL,
     Location     NVARCHAR(200)   NULL,
+    CreatedAt    DATETIME2(0)    NOT NULL CONSTRAINT DF_Auditoriums_CreatedAt DEFAULT SYSUTCDATETIME(),
+    UpdatedAt    DATETIME2(0)    NOT NULL CONSTRAINT DF_Auditoriums_UpdatedAt DEFAULT SYSUTCDATETIME(),
     CONSTRAINT CK_Auditoriums_SeatRows_Positive CHECK (SeatRows > 0),
     CONSTRAINT CK_Auditoriums_SeatCols_Positive CHECK (SeatCols > 0)
 );
@@ -66,6 +74,8 @@ CREATE TABLE dbo.Seats
     AuditoriumId  INT          NOT NULL,
     RowNumber     INT          NOT NULL,
     ColumnNumber  INT          NOT NULL,
+    CreatedAt     DATETIME2(0) NOT NULL CONSTRAINT DF_Seats_CreatedAt DEFAULT SYSUTCDATETIME(),
+    UpdatedAt     DATETIME2(0) NOT NULL CONSTRAINT DF_Seats_UpdatedAt DEFAULT SYSUTCDATETIME(),
     CONSTRAINT FK_Seats_Auditoriums FOREIGN KEY (AuditoriumId) REFERENCES dbo.Auditoriums(AuditoriumId) ON DELETE CASCADE,
     CONSTRAINT CK_Seats_Row_Positive CHECK (RowNumber > 0),
     CONSTRAINT CK_Seats_Column_Positive CHECK (ColumnNumber > 0),
@@ -81,6 +91,8 @@ CREATE TABLE dbo.Showtimes
     StartTime     DATETIME2(0)    NOT NULL,
     EndTime       DATETIME2(0)    NOT NULL,
     BasePrice     DECIMAL(10,2)   NOT NULL,
+    CreatedAt     DATETIME2(0)    NOT NULL CONSTRAINT DF_Showtimes_CreatedAt DEFAULT SYSUTCDATETIME(),
+    UpdatedAt     DATETIME2(0)    NOT NULL CONSTRAINT DF_Showtimes_UpdatedAt DEFAULT SYSUTCDATETIME(),
     CONSTRAINT FK_Showtimes_Movies FOREIGN KEY (MovieId) REFERENCES dbo.Movies(MovieId),
     CONSTRAINT FK_Showtimes_Auditoriums FOREIGN KEY (AuditoriumId) REFERENCES dbo.Auditoriums(AuditoriumId),
     CONSTRAINT CK_Showtimes_TimeRange CHECK (EndTime > StartTime),
@@ -93,11 +105,15 @@ CREATE TABLE dbo.Tickets
     TicketId     INT             IDENTITY(1,1) PRIMARY KEY,
     ShowtimeId   INT             NOT NULL,
     SeatId       INT             NOT NULL,
+    UserId       INT             NOT NULL,
     TicketPrice  DECIMAL(10,2)   NOT NULL,
     SoldAt       DATETIME2(0)    NOT NULL CONSTRAINT DF_Tickets_SoldAt DEFAULT SYSUTCDATETIME(),
+    CreatedAt    DATETIME2(0)    NOT NULL CONSTRAINT DF_Tickets_CreatedAt DEFAULT SYSUTCDATETIME(),
+    UpdatedAt    DATETIME2(0)    NOT NULL CONSTRAINT DF_Tickets_UpdatedAt DEFAULT SYSUTCDATETIME(),
     BuyerName    NVARCHAR(100)   NULL,
     CONSTRAINT FK_Tickets_Showtimes FOREIGN KEY (ShowtimeId) REFERENCES dbo.Showtimes(ShowtimeId) ON DELETE CASCADE,
     CONSTRAINT FK_Tickets_Seats FOREIGN KEY (SeatId) REFERENCES dbo.Seats(SeatId),
+    CONSTRAINT FK_Tickets_Users FOREIGN KEY (UserId) REFERENCES dbo.Users(UserId),
     CONSTRAINT CK_Tickets_TicketPrice_Positive CHECK (TicketPrice > 0),
     CONSTRAINT UQ_Tickets_Showtime_Seat UNIQUE (ShowtimeId, SeatId)
 );
@@ -167,8 +183,8 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Movies)
 BEGIN
-    INSERT INTO dbo.Movies (Title, Description, Duration, ReleaseDate, Rating)
-    VALUES (N'Sample Movie', N'A sample movie for initial data.', 120, CAST(GETDATE() AS DATE), N'PG-13');
+    INSERT INTO dbo.Movies (Title, Genre, Description, Duration, TicketPrice, ReleaseDate, Rating)
+    VALUES (N'Sample Movie', N'Action', N'A sample movie for initial data.', 120, 75000, CAST(GETDATE() AS DATE), N'PG-13');
 END
 GO
 
