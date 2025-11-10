@@ -1,3 +1,4 @@
+using System;
 using System.Data;
 using Cinema.Entities;
 using Microsoft.Data.SqlClient;
@@ -44,6 +45,28 @@ public class UserRepository : IRepository<User>
         catch (Exception ex)
         {
             throw new ApplicationException("Failed to retrieve user by id.", ex);
+        }
+    }
+
+    public User? GetByUsername(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            throw new ArgumentException("Username must be provided.", nameof(username));
+        }
+
+        try
+        {
+            using var connection = new SqlConnection(ConnectionString);
+            using var command = new SqlCommand(@"SELECT UserId, Username, PasswordHash, RoleId, CreatedAt, UpdatedAt FROM dbo.Users WHERE Username = @Username;", connection);
+            command.Parameters.Add(new SqlParameter("@Username", SqlDbType.NVarChar, 50) { Value = username });
+            connection.Open();
+            using var reader = command.ExecuteReader();
+            return reader.Read() ? MapUser(reader) : null;
+        }
+        catch (Exception ex)
+        {
+            throw new ApplicationException("Failed to retrieve user by username.", ex);
         }
     }
 
