@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Cinema.Entities\Cinema.Entities.csproj" />
+    <ProjectReference Include="..\Cinema.DAL\Cinema.DAL.csproj" />
+    <ProjectReference Include="..\Cinema.BLL\Cinema.BLL.csproj" />
+  </ItemGroup>
+</Project>
